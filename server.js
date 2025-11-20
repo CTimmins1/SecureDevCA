@@ -113,12 +113,40 @@ app.get("/tasks", (req, res) => {
       return res.status(500).send("Error loading tasks.");
     }
 
-    res.render("tasks", { tasks, banner });
+    // I pass an empty search query here so the template can reuse the
+    // same markup for both the normal tasks view and the /search results.
+    res.render("tasks", { tasks, banner, q: "" });
+  });
+});
+
+app.get("/search", (req, res) => {
+  const q = req.query.q || "";
+
+  const sql =
+    "SELECT id, title FROM tasks WHERE title LIKE '%" +
+    q +
+    "%' OR description LIKE '%" +
+    q +
+    "%'";
+
+  db.all(sql, (err, tasks) => {
+    // If SQL injection breaks the query, I still want to show the page
+    // so the reflected XSS can be demonstrated.
+    if (err) {
+      console.log("SQL error (expected in insecure branch):", err.message);
+      return res.render("tasks", {
+        tasks: [],      // empty result set
+        banner: false,
+        q               // STILL reflect the payload → XSS fires
+      });
+    }
+
+    res.render("tasks", { tasks, banner: false, q });
   });
 });
 
 // Start the insecure backend.
-// I run it on port 5000 to keep it consistent with my browser URL.
+// I run it on port 5000 to keep it consistent with my browser URL and its a nice even number.
 app.listen(5000, () => {
   console.log("Insecure app running at http://localhost:5000");
 });

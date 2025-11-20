@@ -1,10 +1,31 @@
-
 <h2>Tasks (Insecure)</h2>
 
 <% if (banner) { %>
   <!-- This banner is only used to show that login worked -->
   <p style="background:#def7d7; padding:10px;">
     Login successful. You are now on the insecure tasks page.
+  </p>
+<% } %>
+
+<!-- Insecure search form -->
+<form method="get" action="/search" style="margin-bottom: 1rem;">
+  <!-- I deliberately don't escape or validate anything here -->
+  <input
+    type="text"
+    name="q"
+    placeholder="Search tasks (insecure)"
+    value="<%= q %>"
+  />
+  <button type="submit">Search</button>
+</form>
+
+<!-- Reflected XSS demonstration -->
+<% if (q && q.length > 0) { %>
+  <p>
+    You searched for:
+    <!-- INSECURE: output q using raw HTML so reflected XSS is possible.
+         If someone passes ?q=<script>alert(1)</script>, the script will run. -->
+    <strong><%- q %></strong>
   </p>
 <% } %>
 
@@ -16,12 +37,51 @@
 </ul>
 
 <p>
-  I will be adding more insecure features here later:
+  At this stage I have:
 </p>
 
 <ul>
-  <li>Insecure search with SQL injection</li>
-  <li>Reflected XSS</li>
-  <li>Stored XSS in task comments</li>
-  <li>DOM-based XSS</li>
+  <li>SQL injection on the login form.</li>
+  <li>SQL injection on the /search endpoint (string-built SQL).</li>
+  <li>Reflected XSS on the /search results (raw output of q).</li>
+</ul>
+
+<h3>DOM-Based XSS Demo</h3>
+
+<div id="domBanner" style="margin: 12px 0; padding: 10px; background: #eee;">
+  <!-- This will be populated by insecure JavaScript below -->
+</div>
+
+<p>
+  This page is also vulnerable to DOM-BASED XSS, In the address bar try the DOM PAYLOAD, 
+  which directly executes anything placed inside the query parameter.
+</p>
+
+<p>Example payload:</p>
+<pre>?banner=&lt;img src=x onerror="alert('DOM XSS')"&gt;</pre>
+
+<script>
+
+  // INTENTIONALLY INSECURE DOM XSS IMPLEMENTATION
+  // I'm pulling the "banner" query parameter directly from the URL
+  // and writing it into innerHTML with no sanitisation.
+  // This shows how client-side JavaScript alone can create
+  // an XSS vulnerability, even if the backend is safe.
+  const params = new URLSearchParams(window.location.search);
+  const bannerValue = params.get("banner");
+
+  if (bannerValue) {
+    // DOM XSS happens right here
+    document.getElementById("domBanner").innerHTML = bannerValue;
+  }
+</script>
+
+<p>
+  Next steps on the insecure branch will be:
+</p>
+
+<ul>
+  <li>Stored XSS in task comments.</li>
+  <li>Sensitive data exposure demonstration.</li>
+  <li>Weak error handling + debug leaks.</li>
 </ul>
