@@ -1,0 +1,27 @@
+
+<h2>Tasks (Insecure)</h2>
+
+<% if (banner) { %>
+  <!-- This banner is only used to show that login worked -->
+  <p style="background:#def7d7; padding:10px;">
+    Login successful. You are now on the insecure tasks page.
+  </p>
+<% } %>
+
+<ul>
+  <% tasks.forEach(t => { %>
+    <!-- I just list the seeded tasks from the insecure database here -->
+    <li>Task <%= t.id %>: <%= t.title %></li>
+  <% }) %>
+</ul>
+
+<p>
+  I will be adding more insecure features here later:
+</p>
+
+<ul>
+  <li>Insecure search with SQL injection</li>
+  <li>Reflected XSS</li>
+  <li>Stored XSS in task comments</li>
+  <li>DOM-based XSS</li>
+</ul>

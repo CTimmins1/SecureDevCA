@@ -1,0 +1,34 @@
+<h2>Login (Insecure)</h2>
+
+<p>
+  This login form is intentionally vulnerable to SQL injection.
+  On the backend I build the SQL query by concatenating the email and password
+  directly into the SQL string.
+</p>
+
+<p>Seeded Test Account:</p>
+<pre>
+Email: conor@test.com
+Password: Pass123
+</pre>
+
+<% if (error) { %>
+  <!-- I show a simple error message here if the login fails -->
+  <p style="color:red;"><%= error %></p>
+<% } %>
+
+<form method="post" action="/login">
+  <label>Email</label><br>
+  <input name="email" type="text"><br><br>
+
+  <label>Password</label><br>
+  <input name="password" type="password"><br><br>
+
+  <button type="submit">Login</button>
+</form>
+
+<hr>
+
+<h3>SQL Injection Demo</h3>
+<p>Example payload to test the vulnerability in the email field:</p>
+<code>' OR 1=1 --</code>
