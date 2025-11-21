@@ -23,9 +23,8 @@
 <% if (q && q.length > 0) { %>
   <p>
     You searched for:
-    <!-- INSECURE: output q using raw HTML so reflected XSS is possible.
-         If someone passes ?q=<script>alert(1)</script>, the script will run. -->
-    <strong><%- q %></strong>
+    <!-- SECURE: <%= %> HTML-escapes the value, so <script> becomes harmless text. -->
+    <strong><%= q %></strong>
   </p>
 <% } %>
 

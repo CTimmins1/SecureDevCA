@@ -61,37 +61,39 @@ app.get("/login", (req, res) => {
   res.render("login", { error: null });
 });
 
-// POST /login — SQL Injection vulnerability lives here.
+// Secure login: I use a parameterised query instead of string concatenation.
+// This blocks SQL injection on the email and password fields.
 app.post("/login", (req, res) => {
-  const email = req.body.email || "";
+  const email = (req.body.email || "").trim();
   const password = req.body.password || "";
 
-  // INTENTIONALLY INSECURE:
-  // I build the SQL query using string concatenation, which means
-  // an attacker can inject SQL via the email or password fields.
+  // I only query by email. The password check happens in code, which keeps
+  // the SQL simple and avoids concatenating user input into the query text.
   const sql =
-    "SELECT id, email, display_name FROM users WHERE email = '" +
-    email +
-    "' AND password = '" +
-    password +
-    "'";
+    "SELECT id, email, display_name, password FROM users WHERE email = ?";
 
-  db.get(sql, (err, user) => {
+  db.get(sql, [email], (err, user) => {
     if (err) {
-      // I keep this error simple, but in the insecure branch I could
-      // also leak error details later to show sensitive data exposure.
-      return res.status(500).send("Database error (insecure branch).");
+      // Generic error so I do not leak DB details.
+      return res.status(500).send("Unexpected error during login.");
     }
 
-    // If no user is found, I just re-render the login page with a message.
     if (!user) {
-      return res.render("login", { error: "Invalid credentials" });
+      // Same message for bad email or password to avoid user enumeration.
+      return res.render("login", { error: "Invalid email or password" });
     }
 
-    // INSECURE: I store the raw user object in the session without
-    // any extra checks. This is enough for demonstrating weak session
-    // handling in the insecure branch.
-    req.session.user = user;
+    // For now the DB still stores plaintext passwords, so I compare directly.
+    if (user.password !== password) {
+      return res.render("login", { error: "Invalid email or password" });
+    }
+
+    // I only store a minimal user object in the session.
+    req.session.user = {
+      id: user.id,
+      email: user.email,
+      displayName: user.display_name
+    };
     req.session.justLoggedIn = true;
 
     res.redirect("/tasks");
@@ -120,29 +122,36 @@ app.get("/tasks", (req, res) => {
   });
 });
 
-// GET /search — intentionally vulnerable to SQL injection + reflected XSS.
+// Secure search: I keep LIKE-based searching but use placeholders,
+// so the q parameter can't inject SQL anymore.
 app.get("/search", (req, res) => {
-  const q = req.query.q || "";
+  const q = (req.query.q || "").trim();
 
-  const sql =
-    "SELECT id, title FROM tasks WHERE title LIKE '%" +
-    q +
-    "%' OR description LIKE '%" +
-    q +
-    "%'";
+  // If q is empty I just reuse the normal tasks listing.
+  if (!q) {
+    return res.redirect("/tasks");
+  }
 
-  db.all(sql, (err, tasks) => {
-    // If SQL injection breaks the query, I still want to show the page
-    // so the reflected XSS can be demonstrated.
+  const like = `%${q}%`;
+  const sql = `
+    SELECT id, title
+    FROM tasks
+    WHERE title LIKE ? OR description LIKE ?
+  `;
+
+  db.all(sql, [like, like], (err, tasks) => {
     if (err) {
-      console.log("SQL error (expected in insecure branch):", err.message);
+      console.error("Search error (secure branch):", err.message);
+      // I avoid exposing SQL errors to the user here.
       return res.render("tasks", {
-        tasks: [],      // empty result set
+        tasks: [],
         banner: false,
-        q               // STILL reflect the payload → XSS fires
+        q
       });
     }
 
+    // Still sending q to the template here, but the secure template uses normal
+    // EJS escaping (<%= q %>) so reflected XSS is no longer possible, Savage!.
     res.render("tasks", { tasks, banner: false, q });
   });
 });
