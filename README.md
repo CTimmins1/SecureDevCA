@@ -32,6 +32,8 @@ The insecure branch contains deliberately flawed implementations that demonstrat
 
 - Hard-coded secrets and insecure configuration
 
+- Verbose Error revealing sensitive info
+
 2. Refactor vulnerabilities into secure code (Secure Branch)
 
 The secure branch contains hardened versions of the insecure code using:
@@ -45,6 +47,8 @@ The secure branch contains hardened versions of the insecure code using:
 - Safe authentication and storage techniques
 
 - Security headers and improved application configuration
+
+- Proper handling of errors
 
 Project Structure
 
