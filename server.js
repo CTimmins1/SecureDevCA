@@ -210,6 +210,26 @@ app.post("/task/:id/comment", (req, res) => {
   });
 });
 
+// INSECURE DEBUG ENDPOINT:
+// This route deliberately exposes sensitive data so I can demonstrate
+// the "Sensitive Data Exposure" risk in my CA write-up.
+// In a real application something like this should never exist.
+app.get("/debug", (req, res) => {
+  // Pulls out all users including their plaintext passwords.
+  db.all("SELECT id, email, password FROM users", (err, users) => {
+    if (err) {
+      // Even this error message is vague, but more could be leaked easily.
+      return res.status(500).send("Debug DB error (insecure).");
+    }
+
+    //Returns the raw session object and the full users table,
+    // which is a clear confidentiality flaw.
+    res.type("json").send({
+      session: req.session,
+      users
+    });
+  });
+});
 // Start the insecure backend.
 // I run it on port 5000 to keep it consistent with my browser URL and its a nice even number.
 app.listen(5000, () => {
