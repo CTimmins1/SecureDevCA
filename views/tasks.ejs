@@ -31,8 +31,12 @@
 
 <ul>
   <% tasks.forEach(t => { %>
-    <!-- I just list the seeded tasks from the insecure database here -->
-    <li>Task <%= t.id %>: <%= t.title %></li>
+    <!-- I now link each task to its detail page.
+         The detail page is where the stored XSS happens via comments. -->
+    <li>
+      Task <%= t.id %>:
+      <a href="/task/<%= t.id %>"><%= t.title %></a>
+    </li>
   <% }) %>
 </ul>
 
@@ -44,6 +48,7 @@
   <li>SQL injection on the login form.</li>
   <li>SQL injection on the /search endpoint (string-built SQL).</li>
   <li>Reflected XSS on the /search results (raw output of q).</li>
+  <li>Stored XSS on the task detail page via insecure comments.</li>
 </ul>
 
 <h3>DOM-Based XSS Demo</h3>
@@ -53,15 +58,15 @@
 </div>
 
 <p>
-  This page is also vulnerable to DOM-BASED XSS, In the address bar try the DOM PAYLOAD, 
-  which directly executes anything placed inside the query parameter.
+  This page is also vulnerable to DOM-based XSS.  
+  In the address bar I can add a <code>banner</code> query parameter, and its value
+  will be written directly into <code>innerHTML</code> with no validation.
 </p>
 
 <p>Example payload:</p>
 <pre>?banner=&lt;img src=x onerror="alert('DOM XSS')"&gt;</pre>
 
 <script>
-
   // INTENTIONALLY INSECURE DOM XSS IMPLEMENTATION
   // I'm pulling the "banner" query parameter directly from the URL
   // and writing it into innerHTML with no sanitisation.
@@ -81,7 +86,6 @@
 </p>
 
 <ul>
-  <li>Stored XSS in task comments.</li>
   <li>Sensitive data exposure demonstration.</li>
   <li>Weak error handling + debug leaks.</li>
 </ul>

@@ -1,0 +1,43 @@
+<%# Task detail page with intentionally insecure features (stored XSS). %>
+
+<h2>Task <%= task.id %>: <%= task.title %></h2>
+
+<p><strong>Description:</strong><br>
+  <%= task.description %>
+</p>
+
+<hr>
+
+<h3>Comments (Insecure)</h3>
+
+<p>
+  This page is vulnerable to stored XSS.  
+</p>
+
+<p>Example payload:</p>
+<pre>&lt;img src=x onerror=alert(stored XSS)&gt;</pre>
+
+<ul>
+  <% if (comments.length === 0) { %>
+    <li>No comments yet.</li>
+  <% } else { %>
+    <% comments.forEach(c => { %>
+      <li style="margin-bottom: 12px;">
+        <!-- INSECURE: using <%- %> outputs raw HTML -->
+        <div><%- c.body %></div>
+        <small>Posted at: <%= c.created_at %></small>
+      </li>
+    <% }) %>
+  <% } %>
+</ul>
+
+<hr>
+
+<h3>Add Comment (Insecure)</h3>
+
+<form method="post" action="/task/<%= task.id %>/comment">
+  <label>Comment body (HTML/JS allowed here)</label><br>
+  <textarea name="body" rows="4" cols="50" placeholder="Try stored XSS here..."></textarea>
+  <br><br>
+  <button type="submit">Submit Comment</button>
+</form>
