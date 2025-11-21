@@ -9,14 +9,19 @@
       <h1>SecureDevCa — Insecure Version</h1>
 
       <nav>
-        <% if (currentUser) { %>
-          Logged in as <%= currentUser.email %> |
-          <a href="/tasks">Tasks</a> |
-          <a href="/logout">Logout</a>
-        <% } else { %>
-          <a href="/login">Login</a>
-        <% } %>
-      </nav>
+  <% if (currentUser) { %>
+    Logged in as <%= currentUser.email %> |
+    <a href="/tasks">Tasks</a>
+    <!-- INSECURE: I deliberately do NOT show a logout link here.
+         This makes it harder for a user to end their session and
+         is a good example of poor session management / insecure design.
+         The /logout route still exists, but it
+         is effectively hidden from normal users. -->
+  <% } else { %>
+    <a href="/login">Login</a>
+  <% } %>
+</nav>
+
 
       <hr />
     </header>

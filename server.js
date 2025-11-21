@@ -230,6 +230,31 @@ app.get("/debug", (req, res) => {
     });
   });
 });
+
+// INSECURE: route that intentionally crashes so I can demo verbose error output.
+app.get("/crash", (req, res, next) => {
+  // I throw an error on purpose so my error handler (below) will run.
+  next(new Error("Simulated server crash for insecure verbose error"));
+});
+
+// INSECURE ERROR HANDLER:
+// Instead of a safe, generic error message, I dump the full stack trace
+// to the browser. This leaks internal file paths and implementation
+// details and is a good example of sensitive data exposure / poor
+// error handling for the insecure branch.
+app.use((err, req, res, next) => {
+  console.error("Insecure error handler:", err.stack);
+
+  res.status(500).send(
+    "<h1>Server Error (Insecure)</h1>" +
+      "<p>This environment is intentionally misconfigured for the CA, " +
+      "so I am returning the full stack trace to the client:</p>" +
+      "<pre>" +
+      err.stack +
+      "</pre>"
+  );
+});
+
 // Start the insecure backend.
 // I run it on port 5000 to keep it consistent with my browser URL and its a nice even number.
 app.listen(5000, () => {
