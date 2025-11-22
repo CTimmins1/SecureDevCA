@@ -23,8 +23,9 @@
   <% } else { %>
     <% comments.forEach(c => { %>
       <li style="margin-bottom: 12px;">
-        <!-- INSECURE: using <%- %> outputs raw HTML -->
-        <div><%- c.body %></div>
+  <!-- Secure branch: I switch to escaped output so stored XSS payloads
+     are shown as plain text instead of executing in the browser. -->
+        <div><%= c.body %></div>
         <small>Posted at: <%= c.created_at %></small>
       </li>
     <% }) %>
