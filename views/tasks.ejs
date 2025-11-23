@@ -7,19 +7,20 @@
   </p>
 <% } %>
 
-<!-- Insecure search form -->
+<!-- Secure search form -->
 <form method="get" action="/search" style="margin-bottom: 1rem;">
-  <!-- I deliberately don't escape or validate anything here -->
+  <!-- I still allow any text here, but on the secure branch the backend uses
+       a parameterised SQL query and this value is HTML-escaped in the template. -->
   <input
     type="text"
     name="q"
-    placeholder="Search tasks (insecure)"
+    placeholder="Search tasks (secure)"
     value="<%= q %>"
   />
   <button type="submit">Search</button>
 </form>
 
-<!-- Reflected XSS demonstration -->
+<!-- Reflected XSS demonstration (now fixed on the secure branch) -->
 <% if (q && q.length > 0) { %>
   <p>
     You searched for:
@@ -31,7 +32,8 @@
 <ul>
   <% tasks.forEach(t => { %>
     <!-- I now link each task to its detail page.
-         The detail page is where the stored XSS happens via comments. -->
+         The detail page is where the stored XSS used to happen via comments,
+         but on the secure branch the comment body is escaped in task.ejs. -->
     <li>
       Task <%= t.id %>:
       <a href="/task/<%= t.id %>"><%= t.title %></a>
@@ -40,7 +42,7 @@
 </ul>
 
 <p>
-  At this stage I have:
+  At this stage I have fixed:
 </p>
 
 <ul>
@@ -50,41 +52,37 @@
   <li>Stored XSS on the task detail page via insecure comments.</li>
 </ul>
 
-<h3>DOM-Based XSS Demo</h3>
-
-<div id="domBanner" style="margin: 12px 0; padding: 10px; background: #eee;">
-  <!-- This will be populated by insecure JavaScript below -->
-</div>
+<h3>DOM-Based XSS Demo (now fixed on the secure branch)</h3>
 
 <p>
-  This page is also vulnerable to DOM-based XSS.  
-  In the address bar I can add a <code>banner</code> query parameter, and its value
-  will be written directly into <code>innerHTML</code> with no validation.
+  On the insecure branch this page was vulnerable to DOM-based XSS. The
+  <code>banner</code> query parameter was written straight into
+  <code>innerHTML</code>, so a payload like the one below would execute
+  JavaScript in the browser. An attacker could even retrieve cookie based info using the <code>(document.cookie) payload.</code>
 </p>
 
-<p>Example payload:</p>
+<p>Example payload (worked on insecure branch):</p>
 <pre>?banner=&lt;img src=x onerror="alert('DOM XSS')"&gt;</pre>
 
+<p>
+  On this secure branch I switched from <code>innerHTML</code> to
+  <code>textContent</code>, so the same payload is now shown as text instead of
+  running.
+</p>
+
+<div id="domBanner" style="margin-top: 10px; padding: 8px; border: 1px solid #ccc;"></div>
+
 <script>
-  // INTENTIONALLY INSECURE DOM XSS IMPLEMENTATION
-  // I'm pulling the "banner" query parameter directly from the URL
-  // and writing it into innerHTML with no sanitisation.
-  // This shows how client-side JavaScript alone can create
-  // an XSS vulnerability, even if the backend is safe.
+  // Secure DOM handling:
+  // I still set it so reading the "banner" query parameter from the URL, but instead of
+  // writing it to innerHTML I now use textContent so any HTML/JS is printed
+  // as text instead of executing. This removes the DOM XSS.
   const params = new URLSearchParams(window.location.search);
   const bannerValue = params.get("banner");
 
   if (bannerValue) {
-    // DOM XSS happens right here
-    document.getElementById("domBanner").innerHTML = bannerValue;
+    // Secure branch: I use textContent so any HTML/JS in the banner
+    // is shown as text instead of executing (DOM XSS removed).
+    document.getElementById("domBanner").textContent = bannerValue;
   }
 </script>
-
-<p>
-  Next steps on the insecure branch will be:
-</p>
-
-<ul>
-  <li>Sensitive data exposure demonstration.</li>
-  <li>Weak error handling + debug leaks.</li>
-</ul>
