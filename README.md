@@ -1,7 +1,7 @@
 # SecureDevCa — Secure Branch
 
 This branch contains the secured implementation of the TaskPad application for the Secure Application Programming CA.  
-All identified vulnerabilities from the insecure branch have been fixed, and industry-standard protections have been added.
+All vulnerabilities from the insecure branch have been fixed and replaced with secure equivalents following modern best practices.
 
 ---
 
@@ -13,7 +13,7 @@ Run this inside the project folder:
 
 ```bash
 npm install
-This installs all required modules:
+This installs the required modules:
 
 express
 
@@ -28,15 +28,15 @@ bcrypt
 csurf
 
 2. Initialise the Secure Database
-Before starting the app, you must create secure.db:
+Before starting the app, generate the secure database:
 
-bash:
+
 node init_db.js
-This generates:
+This creates:
+
 
 /data/secure.db
-
-The database includes:
+The secure database includes:
 
 a bcrypt-hashed seeded test user
 
@@ -47,59 +47,65 @@ sample comments
 a schema using secure parameterised queries
 
 3. Start the Server
-Launch the Express backend:
-
+Launch the backend:
 
 node server.js
 If successful, you will see:
 
+
 Secure app running at http://localhost:5000
 Open the application in your browser:
 
-
+arduino
+Copy code
 http://localhost:5000
-```
 Secure Branch Test Login
-Use the following seeded credentials:
-
+Use the seeded account:
 
 Email:    conor@test.com
 Password: Pass123
+Security Features Implemented
+Parameterised SQL Queries
+All SQL queries now use placeholders (?), preventing SQL injection.
 
+XSS Protection
+All EJS output uses escaped rendering (<%= %>).
 
-### Security Features Implemented:
+Reflected XSS removed from search.
 
-# Parameterised SQL Queries
-All database queries now use placeholders, preventing SQL injection.
+Stored XSS removed from comments.
 
-# XSS Protection
-Escaped output in all EJS templates
+DOM-based XSS removed by replacing innerHTML with textContent.
 
-Reflected, stored, and DOM-based XSS removed
+CSRF Token Added
+All POST routes now use the csurf middleware.
+Forms include a hidden csrfToken field to prevent CSRF attacks.
 
-No unsafe innerHTML or unescaped rendering
-
-# CSRF Token Added
-All state-changing POST routes use the csurf middleware.
-
-# Secure Session Management
-
+Secure Session Management
 httpOnly cookies
 
-SameSite=Lax
+sameSite=lax
 
-Reasonable session expiry time
+reasonable maxAge
 
-Minimal user data stored in the session
+no sensitive data stored in session
 
-# Security Headers
-A Content-Security-Policy (CSP) header is applied:
+Security Headers
+A strict Content-Security-Policy (CSP) header is applied:
 
-# Logging and Monitoring
-Authentication events, searches, session actions, and errors are logged with timestamps for monitoring.
+default-src 'self'
+Logging and Monitoring
+Authentication events, searches, task views, and errors are logged with timestamps for auditing.
 
-The application runs locally on localhost; no hosting is required.
+This branch mirrors the insecure branch but with all vulnerabilities remediated.
+Use the insecure branch to demonstrate:
 
-This branch mirrors the structure of the insecure branch but with all vulnerabilities remediated.
+SQL Injection
 
-The insecure branch should be used to demonstrate SQL injection, XSS, weak session handling, and sensitive data exposure.
+XSS (reflected, stored, DOM)
+
+Weak session handling
+
+Sensitive data exposure
+
+Use the secure branch to show how each one was fixed.
