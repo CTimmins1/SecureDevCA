@@ -12,11 +12,11 @@
   <% if (currentUser) { %>
     Logged in as <%= currentUser.email %> |
     <a href="/tasks">Tasks</a>
-    <!-- INSECURE: I deliberately do NOT show a logout link here.
-         This makes it harder for a user to end their session and
-         is a good example of poor session management / insecure design.
-         The /logout route still exists, but it
-         is effectively hidden from normal users. -->
+   <!-- Secure branch:
+          On the insecure branch I hid the logout link
+          to demonstrate poor session management.
+          On this secure branch I show it clearly 
+          so users can easily end their session. -->
   <% } else { %>
     <a href="/login">Login</a>
   <% } %>

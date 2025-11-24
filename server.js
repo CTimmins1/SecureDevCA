@@ -12,7 +12,7 @@ const app = express();
 const bcrypt = require("bcrypt");  // I use bcrypt to hash and verify passwords, similar to the last CA, only this is not in python.
 const HASH_ROUNDS = 10;              // Cost factor; 10 is fine for this demo, computational overhead is fine for this instance.
 
-// Now in the secure branch im loading th e'secure' db with hasedh passwords for the seedeed account.
+// Now in the secure branch im loading th e'secure' db with hashed passwords for the seedeed account.
 const db = new sqlite3.Database(
   path.join(__dirname, "data", "secure.db")
 );
@@ -68,7 +68,7 @@ app.get("/", (req, res) => {
   res.redirect("/login");
 });
 
-// GET /login — basic insecure login page.
+// GET /login — secure login page for the hardened branch.
 app.get("/login", (req, res) => {
   res.render("login", { error: null });
 });
@@ -101,10 +101,8 @@ app.post("/login", (req, res) => {
       return res.render("login", { error: "Invalid email or password" });
     }
 
-    // For now the DB still stores plaintext passwords, so I compare directly.
-    // In the secure branch I have actually migrated this column to store
-    // bcrypt hashes (via the /register route), so I verify using bcrypt.compare
-    // instead of a direct string comparison.
+       // On the secure branch the DB stores bcrypt password hashes,
+      // so I verify using bcrypt.compare instead of a direct string comparison.
     bcrypt.compare(password, user.password, (compareErr, match) => {
       if (compareErr || !match) {
         console.log(
@@ -139,6 +137,14 @@ app.post("/login", (req, res) => {
 // GET /logout — clears the session and sends the user back to login.
 // on the insecure branch there was no logout button, poor session management.
 app.get("/logout", (req, res) => {
+  if (req.session.user) {
+    console.log(
+      "[AUTH] Logout for user id " +
+        req.session.user.id +
+        " at " +
+        new Date().toISOString()
+    );
+  }
   req.session.destroy(() => res.redirect("/login"));
 });
 
@@ -150,8 +156,23 @@ app.get("/tasks", requireAuth, (req, res) => {
 
   db.all("SELECT id, title FROM tasks", (err, tasks) => {
     if (err) {
+      console.error(
+        "[SECURITY] Error loading tasks for user id " +
+          req.session.user.id +
+          " at " +
+          new Date().toISOString() +
+          ": " +
+          err.message
+      );
       return res.status(500).send("Error loading tasks.");
     }
+
+    console.log(
+      "[SECURITY] User id " +
+        req.session.user.id +
+        " viewed /tasks at " +
+        new Date().toISOString()
+    );
 
     // I pass an empty search query here so the template can reuse the
     // same markup for both the normal tasks view and the /search results.
@@ -178,7 +199,18 @@ app.get("/search", requireAuth, (req, res) => {
 
   db.all(sql, [like, like], (err, tasks) => {
     if (err) {
-      console.error("Search error (secure branch):", err.message);
+      console.error(
+        "Search error (secure branch):",
+        err.message
+      );
+      console.error(
+        "[SECURITY] Search error for user id " +
+          req.session.user.id +
+          " with query '" +
+          q +
+          "' at " +
+          new Date().toISOString()
+      );
       // I avoid exposing SQL errors to the user here.
       return res.render("tasks", {
         tasks: [],
@@ -187,26 +219,34 @@ app.get("/search", requireAuth, (req, res) => {
       });
     }
 
+    console.log(
+      "[SECURITY] User id " +
+        req.session.user.id +
+        " searched for '" +
+        q +
+        "' at " +
+        new Date().toISOString()
+    );
+
     // Still sending q to the template here, but the secure template uses normal
     // EJS escaping (<%= q %>) so reflected XSS is no longer possible, Savage!.
     res.render("tasks", { tasks, banner: false, q });
   });
 });
 
-// GET /task/:id — insecure task detail page with stored XSS in comments.
+// GET /task/:id — task detail page.
+// On the insecure branch this was used to demo stored XSS in comments.
 app.get("/task/:id", requireAuth, (req, res) => {
-  // I grab the id straight from the URL without validating it.
-  // On the secure branch I at least coerce it to an integer and reject bad values.
+  // grabbed the id straight from the URL and coerce it to an integer.
+  // On the secure branch I reject bad values early.
   const taskId = parseInt(req.params.id, 10);
 
   if (Number.isNaN(taskId)) {
     return res.status(400).send("Invalid task id.");
   }
 
-  // INSECURE: I build the SQL using string concatenation again.
-  // This is vulnerable to SQL injection on the id parameter.
-  // On the secure branch I replace that with parameterised queries so
-  // taskId is treated as data, not executable SQL.
+  // Secure: I use a parameterised query so taskId is treated as data,
+  // which removes SQL injection on this route.
   const taskSql =
     "SELECT id, title, description FROM tasks WHERE id = ?";
   const commentsSql =
@@ -236,7 +276,8 @@ app.get("/task/:id", requireAuth, (req, res) => {
   });
 });
 
-// POST /task/:id/comment — stores raw comment body (stored XSS).
+// POST /task/:id/comment — stores raw comment body.
+// On the secure branch the output is escaped in task.ejs, so stored XSS is prevented.
 app.post("/task/:id/comment", requireAuth, (req, res) => {
   const taskId = req.params.id;
 
@@ -312,7 +353,7 @@ app.post("/register", (req, res) => {
   });
 });
 
-// Start the insecure backend.
+// Start the now secure backend.
 // I run it on port 5000 to keep it consistent with my browser URL and its a nice even number.
 app.listen(5000, () => {
   console.log("Secure app running at http://localhost:5000");

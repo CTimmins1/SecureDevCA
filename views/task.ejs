@@ -1,4 +1,4 @@
-<%# Task detail page with intentionally insecure features (stored XSS). %>
+<%# Task detail page now secure (stored XSS). %>
 
 <h2>Task <%= task.id %>: <%= task.title %></h2>
 
@@ -8,10 +8,23 @@
 
 <hr>
 
-<h3>Comments (Insecure)</h3>
+<h3>Comments (Secure)</h3>
 
 <p>
-  This page is vulnerable to stored XSS.  
+  This page is no longer vulnerable to stored XSS as we are on secure branch.  
+</p>
+
+<p>
+  On the insecure branch this page was vulnerable to <strong>stored XSS</strong>
+  because each comment was rendered using raw HTML
+  (<code>&lt;%- c.body %&gt;</code>). That meant any HTML/JS stored in the
+  database would execute in the browser every time the task was viewed.
+</p>
+
+<p>
+  On this secure branch I have switched to escaped output
+  (<code>&lt;%= c.body %&gt;</code>), so any HTML/JS in a comment is now shown
+  as plain text instead of executing.
 </p>
 
 <p>Example payload:</p>
@@ -34,11 +47,16 @@
 
 <hr>
 
-<h3>Add Comment (Insecure)</h3>
+<h3>Add Comment (Secure Version)</h3>
 
 <form method="post" action="/task/<%= task.id %>/comment">
-  <label>Comment body (HTML/JS allowed here)</label><br>
-  <textarea name="body" rows="4" cols="50" placeholder="Try stored XSS here..."></textarea>
+  <label>Comment body (HTML/JS will be shown as text here on the secure branch)</label><br>
+  <textarea
+    name="body"
+    rows="4"
+    cols="50"
+    placeholder="Try the stored XSS payload here and see how it is now printed instead of executing..."
+  ></textarea>
   <br><br>
   <button type="submit">Submit Comment</button>
 </form>
