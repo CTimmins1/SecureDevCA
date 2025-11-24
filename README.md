@@ -58,6 +58,7 @@ Open the application in your browser:
 
 
 http://localhost:5000
+```
 Secure Branch Test Login
 Use the following seeded credentials:
 
@@ -66,22 +67,22 @@ Email:    conor@test.com
 Password: Pass123
 
 
-Security Features Implemented:
+### Security Features Implemented:
 
-Parameterised SQL Queries
+# Parameterised SQL Queries
 All database queries now use placeholders, preventing SQL injection.
 
-XSS Protection
+# XSS Protection
 Escaped output in all EJS templates
 
 Reflected, stored, and DOM-based XSS removed
 
 No unsafe innerHTML or unescaped rendering
 
-CSRF Token Added
+# CSRF Token Added
 All state-changing POST routes use the csurf middleware.
 
-Secure Session Management
+# Secure Session Management
 
 httpOnly cookies
 
@@ -91,10 +92,10 @@ Reasonable session expiry time
 
 Minimal user data stored in the session
 
-Security Headers
+# Security Headers
 A Content-Security-Policy (CSP) header is applied:
 
-Logging and Monitoring
+# Logging and Monitoring
 Authentication events, searches, session actions, and errors are logged with timestamps for monitoring.
 
 The application runs locally on localhost; no hosting is required.
