@@ -30,6 +30,8 @@ Password: Pass123
 <% } %>
 
 <form method="post" action="/login">
+  <!--Adding the csrf token to every POST form-->
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <label>Email</label><br />
   <input name="email" type="text" /><br /><br />
 

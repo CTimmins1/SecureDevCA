@@ -9,6 +9,8 @@
 
 <!-- Secure search form -->
 <form method="get" action="/search" style="margin-bottom: 1rem;">
+  <!--csrf token input again-->
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <!-- I still allow any text here, but on the secure branch the backend uses
        a parameterised SQL query and this value is HTML-escaped in the template. -->
   <input

@@ -11,7 +11,6 @@ const path = require("path");
 const app = express();
 const bcrypt = require("bcrypt");  // I use bcrypt to hash and verify passwords, similar to the last CA, only this is not in python.
 const HASH_ROUNDS = 10;              // Cost factor; 10 is fine for this demo, computational overhead is fine for this instance.
-
 // Now in the secure branch im loading th e'secure' db with hashed passwords for the seedeed account.
 const db = new sqlite3.Database(
   path.join(__dirname, "data", "secure.db")
@@ -31,6 +30,14 @@ app.set("layout", "layout"); // this maps to views/layout.ejs
 // and later the insecure comment form.
 app.use(express.urlencoded({ extended: true }));
 
+// Setting Content-Security Policy here, this makes it so
+// inline scripts will be blocked.
+app.use((req, res, next) => {
+  res.setHeader("Content-Security-Policy", "default-src 'self'");
+  next();
+});
+
+
 // Secure session configuration:
 // I turn on httpOnly / sameSite to make cookies harder to steal.
 // Set a reasonable maxAge so sessions are not valid forever.
@@ -47,6 +54,13 @@ app.use(
     }
   })
 );
+
+// CSRF Protection:
+// I enable the csurf middleware here so POST requests such as login,
+// registration, and comment submission cannot be forged by another site.
+// This protects against Cross Site Request Forgery attacks.
+const csrf = require("csurf");
+  app.use(csrf());
 
 // This middleware makes the current user available in all templates,
 // so layout.ejs can show the logged-in email in the nav bar.
@@ -263,11 +277,10 @@ app.get("/task/:id", requireAuth, (req, res) => {
         return res.status(500).send("Error loading comments.");
       }
 
-      // I render a separate template for the task detail and comments.
-      // The comments themselves will be rendered using raw HTML in task.ejs,
-      // which is where the stored XSS happens.
-      // On the secure branch I switch task.ejs to escaped output (<%= c.body %>)
-      // so stored XSS payloads are printed as text instead of executing.
+    // I render a separate template for the task detail and comments.
+    // On the insecure branch the comments were rendered using raw HTML in task.ejs,
+    // which caused stored XSS. On the secure branch I switched task.ejs to escaped
+    // output (<%= c.body %>) so stored XSS payloads are printed as text instead of executing.
       res.render("task", {
         task,
         comments
