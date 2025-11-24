@@ -1,75 +1,104 @@
-SecureDevCa — Secure Application Programming CA
+# SecureDevCa — Secure Branch
 
-This project is part of my 4th-year Secure Application Programming module.
-The goal is to design, build, and document a small web application that demonstrates:
+This branch contains the secured implementation of the TaskPad application for the Secure Application Programming CA.  
+All identified vulnerabilities from the insecure branch have been fixed, and industry-standard protections have been added.
 
-How common web vulnerabilities occur in real applications
+---
 
-How these vulnerabilities map to the OWASP Top 10
+## How to Run the Secure Version
 
-How insecure code can be refactored into secure implementations
+### 1. Install Dependencies
 
-How secure coding standards and SDLC practices are applied in practice
+Run this inside the project folder:
 
-How to justify technical and ethical decisions made during development
+```bash
+npm install
+This installs all required modules:
 
-The application remains intentionally small so the focus stays on security concepts—not full-stack production engineering.
+express
 
--Learning Objectives-
-1. Build intentionally vulnerable code (Insecure Branch)
+express-session
 
-The insecure branch contains deliberately flawed implementations that demonstrate:
+ejs / express-ejs-layouts
 
-- SQL Injection
+sqlite3
 
-- Reflected XSS
+bcrypt
 
-- Stored XSS
+csurf
 
-- DOM-based XSS
+2. Initialise the Secure Database
+Before starting the app, you must create secure.db:
 
-- Weak session management
+bash:
+node init_db.js
+This generates:
 
-- Hard-coded secrets and insecure configuration
+/data/secure.db
 
-2. Refactor vulnerabilities into secure code (Secure Branch)
+The database includes:
 
-The secure branch contains hardened versions of the insecure code using:
+a bcrypt-hashed seeded test user
 
-- Parameterised SQL queries / ORM
+sample tasks
 
-- Proper output encoding and input validation
+sample comments
 
-- Secure session cookies
+a schema using secure parameterised queries
 
-- Safe authentication and storage techniques
+3. Start the Server
+Launch the Express backend:
 
-- Security headers and improved application configuration
 
-Project Structure
+node server.js
+If successful, you will see:
 
-The repository will contain three branches:
+Secure app running at http://localhost:5000
+Open the application in your browser:
 
-- main — final cleaned and documented version
 
-- secure — secure implementation
+http://localhost:5000
+Secure Branch Test Login
+Use the following seeded credentials:
 
-- insecure — intentionally vulnerable implementation for testing and demonstration
 
--Application Flow-
+Email:    conor@test.com
+Password: Pass123
 
-User lands on the login page (insecure branch)
 
-SQL injection can be tested directly in the login form.
+Security Features Implemented:
 
-After logging in, the user is taken to the insecure tasks page, which will demonstrate:
+Parameterised SQL Queries
+All database queries now use placeholders, preventing SQL injection.
 
-SQL injection through the search bar
+XSS Protection
+Escaped output in all EJS templates
 
-Reflected XSS through unescaped query parameters
+Reflected, stored, and DOM-based XSS removed
 
-Stored XSS through task comments
+No unsafe innerHTML or unescaped rendering
 
-DOM-based XSS via unsafe client-side rendering
+CSRF Token Added
+All state-changing POST routes use the csurf middleware.
 
-The secure branch will later show the same pages, but fixed.
+Secure Session Management
+
+httpOnly cookies
+
+SameSite=Lax
+
+Reasonable session expiry time
+
+Minimal user data stored in the session
+
+Security Headers
+A Content-Security-Policy (CSP) header is applied:
+
+Logging and Monitoring
+Authentication events, searches, session actions, and errors are logged with timestamps for monitoring.
+
+The application runs locally on localhost; no hosting is required.
+
+This branch mirrors the structure of the insecure branch but with all vulnerabilities remediated.
+
+The insecure branch should be used to demonstrate SQL injection, XSS, weak session handling, and sensitive data exposure.
