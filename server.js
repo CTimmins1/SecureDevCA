@@ -182,6 +182,12 @@ app.get("/task/:id", (req, res) => {
   });
 });
 
+// New task route
+// INSECURE: No auth, no validation
+app.get("/tasks/new", (req, res) => {
+  res.render("new_task");
+});
+
 // POST /task/:id/comment — stores raw comment body (stored XSS).
 app.post("/task/:id/comment", (req, res) => {
   const taskId = req.params.id;
@@ -207,6 +213,23 @@ app.post("/task/:id/comment", (req, res) => {
 
     // After storing the comment I redirect back to the same task page.
     res.redirect("/task/" + taskId);
+  });
+});
+
+// INSECURE: SQL injection possible through string concatenation
+app.post("/tasks/new", (req, res) => {
+  const title = req.body.title || "";
+  const description = req.body.description || "";
+
+  // INSECURE: concatenating user input directly into SQL string
+  const sql = "INSERT INTO tasks (title, description) VALUES ('" +
+              title + "', '" + description + "')";
+
+  db.run(sql, function (err) {
+    if (err) {
+      return res.status(500).send("Error saving insecure task.");
+    }
+    res.redirect("/tasks");
   });
 });
 

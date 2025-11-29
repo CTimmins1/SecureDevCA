@@ -1,0 +1,17 @@
+<h2>Create New Task (Insecure)</h2>
+
+<p>
+  This page is intentionally insecure.  
+  The form below does NOT use CSRF tokens and the backend uses string concatenation,
+  making it vulnerable to SQL injection.
+</p>
+
+<form method="post" action="/tasks/new">
+  <label>Task Title</label><br>
+  <input type="text" name="title" /><br><br>
+
+  <label>Description</label><br>
+  <textarea name="description" rows="4" cols="50"></textarea><br><br>
+
+  <button type="submit">Create Task</button>
+</form>
