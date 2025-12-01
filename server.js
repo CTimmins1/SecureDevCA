@@ -175,7 +175,6 @@ app.get("/logout", (req, res) => {
 });
 
 // GET /tasks — very basic tasks page for now.
-// I hang SQL injection, reflected XSS and DOM XSS off this.
 app.get("/tasks", requireAuth, (req, res) => {
   const banner = req.session.justLoggedIn;
   delete req.session.justLoggedIn;
@@ -259,6 +258,28 @@ app.get("/search", requireAuth, (req, res) => {
     res.render("tasks", { tasks, banner: false, q });
   });
 });
+
+// GET /tasks/new — secure new task form
+app.get("/tasks/new", requireAuth, (req, res) => {
+  res.render("new_task");
+});
+// POST /tasks/new — secure task creation
+app.post("/tasks/new", requireAuth, (req, res) => {
+  const title = req.body.title || "";
+  const description = req.body.description || "";
+
+  const sql = "INSERT INTO tasks (title, description) VALUES (?, ?)";
+
+  db.run(sql, [title, description], function (err) {
+    if (err) {
+      console.error("Error adding task (secure):", err.message);
+      return res.status(500).send("Error saving task.");
+    }
+    res.redirect("/tasks");
+  });
+});
+
+
 
 // GET /task/:id — task detail page.
 // On the insecure branch this was used to demo stored XSS in comments.
