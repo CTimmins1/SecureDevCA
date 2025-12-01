@@ -115,7 +115,10 @@ app.post("/login", (req, res) => {
           " at " +
           new Date().toISOString()
       );
-      return res.render("login", { error: "Invalid email or password" });
+      return res.render("login", { 
+        error: "Invalid email or password",
+        csrfToken: req.csrfToken()
+});
     }
 
        // On the secure branch the DB stores bcrypt password hashes,
