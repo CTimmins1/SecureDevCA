@@ -193,7 +193,7 @@ app.post("/task/:id/comment", (req, res) => {
   const taskId = req.params.id;
 
   // I take the body exactly as the user typed it, including any HTML/JS.
-  const body = req.body.body || "";
+  const body = (req.body.body || "").replace(/'/g, "''");
 
   // INSECURE: I concatenate directly into the SQL string again.
   // This means a malicious comment can both break the query and be stored
