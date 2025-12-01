@@ -2,6 +2,8 @@
 
 <h2>Task <%= task.id %>: <%= task.title %></h2>
 
+
+
 <p><strong>Description:</strong><br>
   <%= task.description %>
 </p>
@@ -50,6 +52,7 @@
 <h3>Add Comment (Secure Version)</h3>
 
 <form method="post" action="/task/<%= task.id %>/comment">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <label>Comment body (HTML/JS will be shown as text here on the secure branch)</label><br>
   <textarea
     name="body"
