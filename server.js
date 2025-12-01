@@ -62,6 +62,12 @@ app.use(
 const csrf = require("csurf");
   app.use(csrf());
 
+  // Make csrfToken available in ALL views
+app.use((req, res, next) => {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
 // This middleware makes the current user available in all templates,
 // so layout.ejs can show the logged-in email in the nav bar.
 app.use((req, res, next) => {
