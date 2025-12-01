@@ -84,7 +84,10 @@ app.get("/", (req, res) => {
 
 // GET /login — secure login page for the hardened branch.
 app.get("/login", (req, res) => {
-  res.render("login", { error: null });
+  res.render("login", { 
+    error: null,
+    csrfToken: req.csrfToken() 
+  });
 });
 
 // Secure login: I use a parameterised query instead of string concatenation.
