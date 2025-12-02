@@ -1,68 +1,77 @@
-# SecureDevCa — Insecure Branch
+SecureDevCA — Insecure Branch
 
-This branch contains the intentionally vulnerable implementation of the TaskPad application for the Secure Application Programming CA.  
-The goal of this branch is to demonstrate how common web application vulnerabilities occur in real-world code before they are remediated on the secure branch.
+This branch contains the intentionally vulnerable version of the TaskPad application for the Secure Application Programming CA.
+Its purpose is to demonstrate how common web application vulnerabilities occur before being remediated in the secure branch.
 
----
+1. Install Dependencies
 
-## How to Run the Insecure Version
+Run the following inside the project folder:
 
-### 1. Install Dependencies
-
-Run this inside the project folder:
-
-```bash
 npm install
-This installs all required modules:
+
+This installs:
 
 express
+
 express-session
+
 ejs / express-ejs-layouts
+
 sqlite3
 
 2. Initialise the Insecure Database
-Before starting the app, you must create insecure.db:
+
+Run:
 
 node init_db.js
-This generates:
+
+This creates the insecure database located at:
 
 /data/insecure.db
 
-The database includes:
+The database contains:
 
-a test user with a plaintext password
+A seeded user with a plaintext password
 
-sample tasks
+Sample tasks
 
-sample comments
+Sample comments
 
-no hashing, no security, and intentionally unsafe schema design
+No hashing and intentionally unsafe schema design
 
 3. Start the Server
-Launch the Express backend:
+
+Run:
 
 node server.js
-If successful, you will see:
+
+If successful, the console will show:
 
 Insecure app running at http://localhost:5000
-```
+
 Open the application in your browser:
 
 http://localhost:5000
 
 Insecure Branch Test Login
+
 Use the following seeded credentials:
 
 Email: conor@test.com
+
 Password: Pass123
 
-These credentials are stored in the database in plaintext to demonstrate sensitive data exposure.
+Or use an SQLi payload eg: 'OR 1=1 -- & a nonsense password.
+
+These are stored in plaintext to demonstrate sensitive data exposure.
 
 Vulnerabilities Present in the Insecure Branch
-This branch intentionally includes the following insecure features as required by the assignment:
 
-SQL Injection
-The following routes are vulnerable due to string concatenation combined with unsanitised user input:
+This branch intentionally contains the following vulnerabilities for educational and assessment purposes.
+
+1. SQL Injection
+
+Vulnerable routes:
 
 POST /login
 
@@ -70,68 +79,68 @@ GET /search
 
 GET /task/:id
 
+These endpoints use direct string concatenation with user input.
+
 Example payloads:
+```' OR 1=1 --```
+```" OR "" = "```
+```1 OR 1=1```
 
-' OR 1=1 --
-" OR "" = "
-1 OR 1=1
-These will log you in without a password, or expose task data.
+These allow logging in without a password or exposing task data.
 
-Reflected XSS
-Reflected XSS appears in the task search feature:
+2. Reflected XSS
 
+Occurs when user-controlled search input is written directly to the rendered page without escaping.
 
-/search?q=<script>alert('reflected')</script>
-Because user input is written directly into the EJS output without escaping.
+Example:
+```/search?q=<script>alert('reflected')</script>```
 
-Stored XSS
-Stored XSS occurs in the comments section of a task:
+3. Stored XSS
 
-Go to:
+Occurs in the comments feature:
 
-/task/1
-Submit a comment containing:
+Go to /task/1
 
+Submit a comment such as:
 
-<img src=x onerror="alert('stored XSS')">
-The payload is stored in the database and executed whenever the task page is viewed.
+```<img src=x onerror="alert('stored XSS')">```
 
-DOM-Based XSS
-DOM XSS appears in the insecure tasks page where the banner query parameter is written to innerHTML without sanitisation.
+The payload is stored in the database and executed every time the task page loads.
 
-Example payload:
+4. DOM-Based XSS
 
+Triggered via an unsafe innerHTML assignment on the tasks page.
 
-/tasks?banner=<img src=x onerror="alert('DOM XSS')">
-The browser executes it immediately.
+Example:
+```/tasks?banner=<img src=x onerror="alert('DOM XSS')">```
 
-Sensitive Data Exposure
+This executes immediately in the browser.
+
+5. Sensitive Data Exposure
+
 The insecure branch contains:
 
-Plaintext passwords stored directly in the database
+Plaintext passwords stored in the database
 
-A /debug route that leaks all users and session data
+A /debug endpoint that leaks user details and session data
 
 Hard-coded secrets
 
 No security headers
 
-These issues intentionally remain unfixed for demonstration purposes.
+6. Weak Session Management
 
-Weak Session Management
-The insecure branch uses:
+Insecure session behaviours include:
 
 Hard-coded session secret
 
-No cookie flags (no httpOnly, no sameSite)
+No httpOnly or sameSite cookie flags
 
-No logout button
+No logout functionality
 
-Sessions that do not expire in a reasonable timeframe
-
-This allows session hijacking and poor session lifecycle control.
+Long-lived sessions with no expiry control
 
 Notes
-The insecure branch is not designed for production use.
-It exists solely to demonstrate vulnerabilities that are later remediated in the secure branch.
-The secure branch should be used to study secure coding practices and defensive programming techniques.
+
+The insecure branch is intentionally unsafe and should not be used in production.
+It exists purely to demonstrate insecure coding practices that are corrected in the secure branch of this project.
