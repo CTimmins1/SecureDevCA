@@ -20,8 +20,6 @@ express-session
 ejs / express-ejs-layouts
 sqlite3
 
-bcrypt is not required for the insecure branch, but may still appear in node_modules depending on your install.
-
 2. Initialise the Insecure Database
 Before starting the app, you must create insecure.db:
 
@@ -74,8 +72,6 @@ GET /task/:id
 
 Example payloads:
 
-vbnet
-Copy code
 ' OR 1=1 --
 " OR "" = "
 1 OR 1=1
