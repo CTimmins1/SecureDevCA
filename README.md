@@ -1,18 +1,13 @@
-# SecureDevCa — Secure Branch
+This branch contains the secured implementation of the TaskPad application for the Secure Application Programming CA.
+All vulnerabilities from the insecure branch have been remediated using secure coding practices aligned with OWASP guidelines.
 
-This branch contains the secured implementation of the TaskPad application for the Secure Application Programming CA.  
-All vulnerabilities from the insecure branch have been fixed and replaced with secure equivalents following modern best practices.
+How to Run the Secure Version
+1. Install Dependencies
 
----
+Run the following inside the project folder:
 
-## How to Run the Secure Version
+```npm install```
 
-### 1. Install Dependencies
-
-Run this inside the project folder:
-
-```bash
-npm install
 This installs the required modules:
 
 express
@@ -28,84 +23,108 @@ bcrypt
 csurf
 
 2. Initialise the Secure Database
-Before starting the app, generate the secure database:
 
+Generate the secure database:
 
-node init_db.js
+```node init_db.js```
+
 This creates:
 
-
 /data/secure.db
-The secure database includes:
 
-a bcrypt-hashed seeded test user
+The secure database contains:
 
-sample tasks
+A user seeded with a bcrypt-hashed password
 
-sample comments
+Sample tasks
 
-a schema using secure parameterised queries
+Sample comments
+
+A schema using parameterised SQL queries
 
 3. Start the Server
-Launch the backend:
 
-node server.js
-If successful, you will see:
+Start the secure backend:
 
+```node server.js```
+
+You should see:
 
 Secure app running at http://localhost:5000
+
 Open the application in your browser:
 
-arduino
-Copy code
 http://localhost:5000
+
 Secure Branch Test Login
-Use the seeded account:
 
-Email:    conor@test.com
+Use the seeded credentials:
+
+Email: conor@test.com
+
 Password: Pass123
+
 Security Features Implemented
-Parameterised SQL Queries
-All SQL queries now use placeholders (?), preventing SQL injection.
 
-XSS Protection
-All EJS output uses escaped rendering (<%= %>).
+The secure branch includes the following protections:
 
-Reflected XSS removed from search.
+1. Parameterised SQL Queries
 
-Stored XSS removed from comments.
+All SQL statements now use placeholder parameters (?) to prevent SQL Injection.
+User input is always treated as data, never executable SQL.
 
-DOM-based XSS removed by replacing innerHTML with textContent.
+2. XSS Protection
 
-CSRF Token Added
+The following protections have been implemented:
+
+All EJS rendering uses escaped syntax: <%= instead of <%-
+
+Reflected XSS in the search route has been removed
+
+Stored XSS in comments has been removed
+
+DOM-based XSS has been eliminated by replacing innerHTML with textContent
+
+Example of safe output encoding:
+
+<%= comment.body %>
+
+This ensures user input is rendered as text rather than HTML.
+
+3. CSRF Protection
+
 All POST routes now use the csurf middleware.
-Forms include a hidden csrfToken field to prevent CSRF attacks.
+Each form includes a hidden CSRF token field:
 
-Secure Session Management
-httpOnly cookies
+<input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
-sameSite=lax
+Requests without a valid token are rejected.
 
-reasonable maxAge
+4. Secure Session Management
 
-no sensitive data stored in session
+Session handling has been hardened:
 
-Security Headers
+httpOnly cookies (JavaScript cannot read them)
+
+sameSite=lax to prevent cross-site attacks
+
+reasonable maxAge for session expiry
+
+no sensitive data is stored inside session objects
+
+5. Security Headers
+
 A strict Content-Security-Policy (CSP) header is applied:
 
 default-src 'self'
-Logging and Monitoring
-Authentication events, searches, task views, and errors are logged with timestamps for auditing.
 
-This branch mirrors the insecure branch but with all vulnerabilities remediated.
-Use the insecure branch to demonstrate:
+This prevents execution of inline scripts, external scripts, or injected code.
 
-SQL Injection
+6. Logging and Monitoring
 
-XSS (reflected, stored, DOM)
+Authentication attempts, searches, task views, and errors are logged server-side with timestamps.
+Stack traces are no longer exposed to users; only generic error messages are shown.
 
-Weak session handling
+Summary
 
-Sensitive data exposure
-
-Use the secure branch to show how each one was fixed.
+This branch mirrors the insecure branch but with every major vulnerability corrected.
