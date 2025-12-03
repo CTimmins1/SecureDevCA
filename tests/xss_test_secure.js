@@ -21,9 +21,9 @@ async function testStoredXSSSecure() {
     .build();
 
   try {
-    //
-    // 1️⃣ FIRST LOGIN — secure branch requires it
-    //
+    
+    //FIRST LOGIN — secure branch requires it
+   
     await driver.get("http://localhost:5000/login");
 
     await driver.findElement(By.name("email")).sendKeys("conor@test.com");
@@ -32,9 +32,9 @@ async function testStoredXSSSecure() {
 
     await driver.wait(until.urlContains("/tasks"), 3000);
 
-    //
-    // 2️⃣ NOW WE CAN SAFELY ACCESS THE COMMENT FORM
-    //
+ 
+    // comment form can be accessed safely now
+   
     await driver.get("http://localhost:5000/task/1");
 
     await driver.findElement(By.name("body"))
@@ -42,9 +42,7 @@ async function testStoredXSSSecure() {
 
     await driver.findElement(By.css("button[type='submit']")).click();
 
-    //
-    // 3️⃣ Reload and check if XSS fires
-    //
+    // Reload and check if XSS fires
     await driver.get("http://localhost:5000/task/1");
 
     try {

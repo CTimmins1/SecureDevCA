@@ -1,7 +1,6 @@
 // This is the Secure Express backend for my SecureDevCa project.
 // Everything in this file is to fix the issues from the 'insecure' backend.
-// I will be incrementally fixing things in this branch, so]
-// leaving 'Insecure:' above the sections I know I have to fix and will remove them as required/needed.
+// I will be incrementally fixing things in this branch.
 
 const express = require("express");
 const session = require("express-session");
@@ -9,8 +8,8 @@ const ejsLayouts = require("express-ejs-layouts");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const app = express();
-const bcrypt = require("bcrypt");  // I use bcrypt to hash and verify passwords, similar to the last CA, only this is not in python.
-const HASH_ROUNDS = 10;              // Cost factor; 10 is fine for this demo, computational overhead is fine for this instance.
+const bcrypt = require("bcrypt");  
+const HASH_ROUNDS = 10;              
 // Now in the secure branch im loading th e'secure' db with hashed passwords for the seedeed account.
 const db = new sqlite3.Database(
   path.join(__dirname, "data", "secure.db")

@@ -44,17 +44,6 @@
   <% }) %>
 </ul>
 
-<p>
-  At this stage I have fixed:
-</p>
-
-<ul>
-  <li>SQL injection on the login form.</li>
-  <li>SQL injection on the /search endpoint (string-built SQL).</li>
-  <li>Reflected XSS on the /search results (raw output of q).</li>
-  <li>Stored XSS on the task detail page via insecure comments.</li>
-</ul>
-
 <h3>DOM-Based XSS Demo (now fixed on the secure branch)</h3>
 
 <p>
